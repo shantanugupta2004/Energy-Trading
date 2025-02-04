@@ -4,7 +4,7 @@ const contractABI = require("../../artifacts/contracts/EnergyTrading.sol/EnergyT
 
 const provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_SEPOLIA_URL);
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-const contractAddress = "0xYourContractAddressHere";
+const contractAddress = "0x0278d2529d459e7383af2a0A8D7B4Df77A97467A";
 const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
 const createOffer = async (req, res) => {

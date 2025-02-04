@@ -1,18 +1,15 @@
-require("dotenv").config();
 const hre = require("hardhat");
 
 async function main() {
     const EnergyTrading = await hre.ethers.getContractFactory("EnergyTrading");
-    const energyTrading = await EnergyTrading.deploy();
+    const energyTrading = await EnergyTrading.deploy(); // Deploy contract
 
-    await energyTrading.waitForDeployment();
+    await energyTrading.waitForDeployment(); // Wait for contract deployment
 
-    console.log("EnergyTrading Contract deployed at:", energyTrading.address);
+    console.log("EnergyTrading Contract deployed at:", await energyTrading.getAddress()); // Correct way to get address
 }
 
-main()
-    .then(() => process.exit(0))
-    .catch((error) => {
-        console.error(error);
-        process.exit(1);
-    });
+main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+});
