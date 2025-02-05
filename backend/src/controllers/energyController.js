@@ -27,11 +27,19 @@ exports.listEnergy = async (req, res) => {
 // Buy Energy
 exports.buyEnergy = async (req, res) => {
   try {
-    const { listingId, amount } = req.body;
-    const price = await energyTradingContract.getPrice(listingId);
-    const totalCost = price * amount;
+    const { listingId } = req.body;
 
-    const tx = await energyTradingContract.buyEnergy(listingId, amount, { value: totalCost });
+    // Fetch price from contract
+    const offer = await energyTradingContract.getOffer(listingId);
+    const price = offer.price;
+
+    // Ensure the offer is available
+    if (!offer.isAvailable) {
+      return res.status(400).json({ error: "This offer is not available" });
+    }
+
+    // Execute transaction
+    const tx = await energyTradingContract.buyEnergy(listingId, { value: price });
     await tx.wait();
 
     res.json({ message: "Energy purchased successfully!", transactionHash: tx.hash });
@@ -41,13 +49,28 @@ exports.buyEnergy = async (req, res) => {
   }
 };
 
-// Fetch Market Listings
+// Get Energy Offer Details
 exports.getMarketListings = async (req, res) => {
   try {
-    const listings = await energyTradingContract.getMarketListings();
+    let listings = [];
+    
+    for (let i = 0; i < await energyTradingContract.nextOfferId(); i++) {
+      const offer = await energyTradingContract.getOffer(i);
+      if (offer.isAvailable) {
+        listings.push({
+          id: offer.id.toString(),
+          seller: offer.seller,
+          amount: offer.amount.toString(),
+          price: ethers.formatEther(offer.price),
+          isAvailable: offer.isAvailable
+        });
+      }
+    }
+
     res.json({ listings });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to fetch market listings" });
+    res.status(500).json({ error: "Failed to fetch market listings", details: error.message });
   }
 };
+
