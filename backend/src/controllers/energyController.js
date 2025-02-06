@@ -4,7 +4,7 @@ const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_URL);
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 
 // Import Smart Contract ABI
-const contractABI = require("/home/shantanu2004/blockchain-project/backend/artifacts/contracts/EnergyTrading.sol/EnergyTrading.json").abi;
+const contractABI = require("../../artifacts/contracts/EnergyTrading.sol/EnergyTrading.json").abi;
 const contractAddress = process.env.CONTRACT_ADDRESS;
 
 // Initialize Smart Contract
