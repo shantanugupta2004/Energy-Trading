@@ -6,10 +6,29 @@ const SellEnergy = () => {
   const [amount, setAmount] = useState("");
   const [price, setPrice] = useState("");
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const listEnergy = async () => {
+    if (!window.ethereum) {
+      alert("MetaMask is not installed! Please install MetaMask and try again.");
+      return;
+    }
+
+    const accounts = await window.ethereum.request({ method: "eth_accounts" });
+
+    if (accounts.length === 0) {
+      try {
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+      } catch (error) {
+        alert("Please connect MetaMask to proceed.");
+        return;
+      }
+    }
+
     try {
       setLoading(true);
+      setMessage("Waiting for transaction confirmation...");
+
       const { contract } = await getBlockchain();
       if (!contract) return;
 
@@ -19,12 +38,12 @@ const SellEnergy = () => {
       );
       await tx.wait();
 
-      alert("Energy listed successfully!");
+      setMessage("Energy listed successfully!");
       setAmount("");
       setPrice("");
     } catch (error) {
       console.error(error);
-      alert("Failed to list energy.");
+      setMessage("Transaction failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -53,8 +72,9 @@ const SellEnergy = () => {
           className="bg-green-500 text-white px-4 py-2 rounded w-full"
           disabled={loading}
         >
-          {loading ? "Listing..." : "List Energy"}
+          {loading ? "Processing..." : "List Energy"}
         </button>
+        {message && <p className="text-center text-gray-600 mt-2">{message}</p>}
       </div>
     </div>
   );

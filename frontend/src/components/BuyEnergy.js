@@ -4,21 +4,45 @@ import getBlockchain from "../utils/blockchain";
 const BuyEnergy = () => {
   const [offerId, setOfferId] = useState("");
   const [amount, setAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handleBuy = async () => {
-    const { contract } = await getBlockchain();
-    if (contract) {
-      try {
-        const price = await contract.getOffer(offerId);
-        const totalCost = price.price * amount;
+    if (!window.ethereum) {
+      alert("MetaMask is not installed! Please install MetaMask and try again.");
+      return;
+    }
 
-        const tx = await contract.buyEnergy(offerId, { value: totalCost });
-        await tx.wait();
-        alert("Purchase successful!");
+    const accounts = await window.ethereum.request({ method: "eth_accounts" });
+
+    if (accounts.length === 0) {
+      try {
+        await window.ethereum.request({ method: "eth_requestAccounts" });
       } catch (error) {
-        console.error(error);
-        alert("Transaction failed!");
+        alert("Please connect MetaMask to proceed.");
+        return;
       }
+    }
+
+    try {
+      setLoading(true);
+      setMessage("Waiting for transaction confirmation...");
+
+      const { contract } = await getBlockchain();
+      if (!contract) return;
+
+      const offer = await contract.getOffer(offerId);
+      const totalCost = offer.price * amount;
+
+      const tx = await contract.buyEnergy(offerId, { value: totalCost });
+      await tx.wait();
+
+      setMessage("Purchase successful!");
+    } catch (error) {
+      console.error(error);
+      setMessage("Transaction failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,9 +63,14 @@ const BuyEnergy = () => {
         onChange={(e) => setAmount(e.target.value)}
         className="w-full p-2 border rounded"
       />
-      <button onClick={handleBuy} className="w-full bg-green-500 text-white py-2 rounded">
-        Buy Energy
+      <button
+        onClick={handleBuy}
+        className="w-full bg-green-500 text-white py-2 rounded"
+        disabled={loading}
+      >
+        {loading ? "Processing..." : "Buy Energy"}
       </button>
+      {message && <p className="text-center text-gray-600 mt-2">{message}</p>}
     </div>
   );
 };
