@@ -32,7 +32,8 @@ const BuyEnergy = () => {
       if (!contract) return;
 
       const offer = await contract.getOffer(offerId);
-      const totalCost = offer.price * amount;
+      // eslint-disable-next-line no-undef
+      const totalCost = BigInt(offer.price) * BigInt(amount);
 
       const tx = await contract.buyEnergy(offerId, { value: totalCost });
       await tx.wait();
@@ -40,6 +41,11 @@ const BuyEnergy = () => {
       setMessage("Purchase successful!");
     } catch (error) {
       console.error(error);
+      if (error.code === "INSUFFICIENT_FUNDS" || error.message.includes("insufficient funds")) {
+        alert("You do not have enough ETH to complete this transaction.");
+      } else {
+        alert("Transaction failed! Please check the details and try again.");
+      }
       setMessage("Transaction failed. Please try again.");
     } finally {
       setLoading(false);
