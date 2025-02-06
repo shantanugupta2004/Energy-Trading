@@ -1,59 +1,49 @@
 import React, { useState } from "react";
-import { getContract, connectWallet } from "../utils/blockchain";
-import { ethers } from "ethers";
+import getBlockchain from "../utils/blockchain";
 
 const BuyEnergy = () => {
-    const [offerId, setOfferId] = useState("");
-    const [message, setMessage] = useState("");
+  const [offerId, setOfferId] = useState("");
+  const [amount, setAmount] = useState("");
 
-    const handleBuy = async () => {
-        if (!offerId) {
-            setMessage("Enter a valid offer ID.");
-            return;
-        }
+  const handleBuy = async () => {
+    const { contract } = await getBlockchain();
+    if (contract) {
+      try {
+        const price = await contract.getOffer(offerId);
+        const totalCost = price.price * amount;
 
-        const { signer } = await connectWallet();
-        if (!signer) {
-            setMessage("Please connect your wallet.");
-            return;
-        }
+        const tx = await contract.buyEnergy(offerId, { value: totalCost });
+        await tx.wait();
+        alert("Purchase successful!");
+      } catch (error) {
+        console.error(error);
+        alert("Transaction failed!");
+      }
+    }
+  };
 
-        try {
-            const contract = await getContract(signer);
-            const offer = await contract.offers(offerId);
-            if (!offer.isAvailable) {
-                setMessage("Offer not available.");
-                return;
-            }
-
-            const price = offer.price;
-            const tx = await contract.buyEnergy(offerId, { value: price });
-            await tx.wait();
-            setMessage("Purchase successful!");
-        } catch (error) {
-            setMessage("Error: " + error.message);
-        }
-    };
-
-    return (
-        <div>
-            <h2 className="text-xl font-semibold mb-2">Buy Energy</h2>
-            <input
-                type="number"
-                placeholder="Enter Offer ID"
-                className="w-full p-2 border rounded mb-2"
-                value={offerId}
-                onChange={(e) => setOfferId(e.target.value)}
-            />
-            <button
-                onClick={handleBuy}
-                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-            >
-                Buy Energy
-            </button>
-            {message && <p className="mt-2 text-sm text-red-600">{message}</p>}
-        </div>
-    );
+  return (
+    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-lg font-bold">Buy Energy</h2>
+      <input
+        type="text"
+        placeholder="Offer ID"
+        value={offerId}
+        onChange={(e) => setOfferId(e.target.value)}
+        className="w-full p-2 border rounded"
+      />
+      <input
+        type="text"
+        placeholder="Amount"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        className="w-full p-2 border rounded"
+      />
+      <button onClick={handleBuy} className="w-full bg-green-500 text-white py-2 rounded">
+        Buy Energy
+      </button>
+    </div>
+  );
 };
 
 export default BuyEnergy;

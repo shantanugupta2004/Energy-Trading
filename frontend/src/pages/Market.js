@@ -1,23 +1,60 @@
-import React from "react";
-import EnergyList from "../components/EnergyList";
-import SellEnergy from "../components/SellEnergy";
-import BuyEnergy from "../components/BuyEnergy";
+import { useEffect, useState } from "react";
+import { ethers } from "ethers";
+import getBlockchain from "../utils/blockchain";
 
 const Market = () => {
+  const [listings, setListings] = useState([]);
+
+  useEffect(() => {
+    const fetchListings = async () => {
+      const { contract } = await getBlockchain();
+      if (!contract) return;
+
+      let fetchedListings = [];
+      let offerId = 0;
+
+      while (true) {
+        try {
+          const offer = await contract.getOffer(offerId);
+          if (offer.isAvailable) {
+            fetchedListings.push({
+              id: offerId,
+              seller: offer.seller,
+              amount: Number(offer.amount),
+              price: ethers.formatEther(offer.price), // Convert price to ETH
+            });
+          }
+          offerId++;
+        } catch (error) {
+          break; // Stop when we reach an invalid ID
+        }
+      }
+
+      setListings(fetchedListings);
+    };
+
+    fetchListings();
+  }, []);
+
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">🔄 Energy Marketplace</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="p-4 bg-white shadow-md rounded-lg">
-          <SellEnergy />
-        </div>
-        <div className="p-4 bg-white shadow-md rounded-lg">
-          <BuyEnergy />
-        </div>
-      </div>
-      <div className="mt-6">
-        <EnergyList />
-      </div>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Market Listings</h1>
+      {listings.length === 0 ? (
+        <p>No energy listings available.</p>
+      ) : (
+        <ul className="mt-4 space-y-4">
+          {listings.map((listing) => (
+            <li key={listing.id} className="border p-4 rounded-lg shadow">
+              <p>Seller: {listing.seller}</p>
+              <p>Amount: {listing.amount} kWh</p>
+              <p>Price: {listing.price} ETH</p>
+              <button className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
+                Buy
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

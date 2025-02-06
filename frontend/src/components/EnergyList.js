@@ -1,35 +1,50 @@
-import React from "react";
+import React, { useState } from "react";
+import getBlockchain from "../utils/blockchain";
 
 const EnergyList = () => {
-  const energyOffers = [
-    { id: 1, seller: "0x1234...abcd", amount: "10 kWh", price: "0.05 ETH" },
-    { id: 2, seller: "0x5678...efgh", amount: "25 kWh", price: "0.12 ETH" },
-    { id: 3, seller: "0x9abc...ijkl", amount: "50 kWh", price: "0.22 ETH" },
-  ];
+  const [amount, setAmount] = useState("");
+  const [price, setPrice] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const { contract } = await getBlockchain();
+    if (contract) {
+      try {
+        const tx = await contract.listEnergy(
+          ethers.parseUnits(amount, "ether"),
+          ethers.parseUnits(price, "ether")
+        );
+        await tx.wait();
+        alert("Energy listed successfully!");
+      } catch (error) {
+        console.error(error);
+        alert("Transaction failed!");
+      }
+    }
+  };
 
   return (
-    <div className="mt-6 p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">⚡ Available Energy Offers</h2>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="p-3 text-gray-700">Seller</th>
-              <th className="p-3 text-gray-700">Amount</th>
-              <th className="p-3 text-gray-700">Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {energyOffers.map((offer) => (
-              <tr key={offer.id} className="border-b hover:bg-gray-100">
-                <td className="p-3 text-gray-600">{offer.seller}</td>
-                <td className="p-3 text-gray-600">{offer.amount}</td>
-                <td className="p-3 text-gray-600">{offer.price}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-lg font-bold">List Energy</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="text"
+          placeholder="Amount (in kWh)"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          className="w-full p-2 border rounded"
+        />
+        <input
+          type="text"
+          placeholder="Price (ETH)"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          className="w-full p-2 border rounded"
+        />
+        <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded">
+          List Energy
+        </button>
+      </form>
     </div>
   );
 };

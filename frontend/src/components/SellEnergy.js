@@ -1,61 +1,63 @@
-import React, { useState } from "react";
-import { getContract, connectWallet } from "../utils/blockchain";
+import { useState } from "react";
 import { ethers } from "ethers";
+import getBlockchain from "../utils/blockchain";
 
 const SellEnergy = () => {
-    const [energyAmount, setEnergyAmount] = useState("");
-    const [price, setPrice] = useState("");
-    const [message, setMessage] = useState("");
+  const [amount, setAmount] = useState("");
+  const [price, setPrice] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const handleSell = async () => {
-        if (!energyAmount || !price) {
-            setMessage("Please enter valid values.");
-            return;
-        }
+  const listEnergy = async () => {
+    try {
+      setLoading(true);
+      const { contract } = await getBlockchain();
+      if (!contract) return;
 
-        const { signer } = await connectWallet();
-        if (!signer) {
-            setMessage("Please connect your wallet.");
-            return;
-        }
+      const tx = await contract.listEnergy(
+        ethers.parseUnits(amount, 0),
+        ethers.parseEther(price)
+      );
+      await tx.wait();
 
-        try {
-            const contract = await getContract(signer);
-            const priceInWei = ethers.parseEther(price);
-            const tx = await contract.createOffer(energyAmount, priceInWei);
-            await tx.wait();
-            setMessage("Energy listed for sale!");
-        } catch (error) {
-            setMessage("Error: " + error.message);
-        }
-    };
+      alert("Energy listed successfully!");
+      setAmount("");
+      setPrice("");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to list energy.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <div>
-            <h2 className="text-xl font-semibold mb-2">Sell Energy</h2>
-            <input
-                type="number"
-                placeholder="Energy Amount (kWh)"
-                className="w-full p-2 border rounded mb-2"
-                value={energyAmount}
-                onChange={(e) => setEnergyAmount(e.target.value)}
-            />
-            <input
-                type="text"
-                placeholder="Price in ETH"
-                className="w-full p-2 border rounded mb-2"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-            />
-            <button
-                onClick={handleSell}
-                className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
-            >
-                Sell Energy
-            </button>
-            {message && <p className="mt-2 text-sm text-red-600">{message}</p>}
-        </div>
-    );
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Sell Energy</h1>
+      <div className="mt-4 space-y-4">
+        <input
+          type="number"
+          className="border p-2 w-full rounded"
+          placeholder="Amount (kWh)"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+        <input
+          type="text"
+          className="border p-2 w-full rounded"
+          placeholder="Price in ETH"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+        />
+        <button
+          onClick={listEnergy}
+          className="bg-green-500 text-white px-4 py-2 rounded w-full"
+          disabled={loading}
+        >
+          {loading ? "Listing..." : "List Energy"}
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default SellEnergy;

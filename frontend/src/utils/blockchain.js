@@ -1,20 +1,19 @@
 import { ethers } from "ethers";
+import contractABI from "../contracts/EnergyTrading.json"; // Ensure this path is correct
 
-const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS;
-const contractABI = require("../EnergyTradingABI.json");
+const contractAddress = "0x0278d2529d459e7383af2a0A8D7B4Df77A97467A"; 
 
-export const connectWallet = async () => {
-    if (!window.ethereum) return { error: "MetaMask not installed" };
-
-    try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        return { provider, signer };
-    } catch (error) {
-        return { error: error.message };
-    }
+const getBlockchain = async () => {
+  if (window.ethereum) {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+    const signer = await provider.getSigner();
+    const contract = new ethers.Contract(contractAddress, contractABI.abi, signer);
+    return { contract, signer };
+  } else {
+    alert("Please install MetaMask!");
+    return null;
+  }
 };
 
-export const getContract = async (signer) => {
-    return new ethers.Contract(contractAddress, contractABI, signer);
-};
+export default getBlockchain;
