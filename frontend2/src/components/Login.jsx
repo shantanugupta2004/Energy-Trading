@@ -24,9 +24,11 @@ const Login = ({ setUser }) => {
         navigate("/market"); // Redirect to Market page
       } else {
         setError(data.message);
+        alert("Invalid credentials")
       }
     } catch (err) {
       setError("Login failed. Try again.");
+      
     }
   };
 

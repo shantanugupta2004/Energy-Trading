@@ -12,9 +12,10 @@ const Home = () => {
           Powering the Future with Decentralized Energy
         </h1>
         <p className="text-lg text-gray-300 mb-6">
-          Buy and sell renewable energy seamlessly on the ethereum blockchain. Join the revolution today.
+          Buy and sell renewable energy seamlessly on the Ethereum (Sepolia Testnet) blockchain. Join the revolution today.
+          <p>View the contract on <a href="https://sepolia.etherscan.io/address/0x0278d2529d459e7383af2a0A8D7B4Df77A97467A" target="_blank">Etherscan</a></p>
         </p>
-
+         
         <div className="space-x-4">
           <Link to="/market" className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition">
             Explore Market
