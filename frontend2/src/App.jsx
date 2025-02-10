@@ -26,8 +26,8 @@ function App() {
         <Router>
       {user && <Navbar handleLogout={handleLogout} />}
       <Routes>
-        <Route path="/login" element={!user ? <Login setUser={setUser} /> : <Navigate to="/market" />} />
-        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/market" />} />
+        <Route path="/login" element={!user ? <Login setUser={setUser} /> : <Navigate to="/" />} />
+        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
         <Route path="/market" element={user ? <Market /> : <Navigate to="/login" />} />
         <Route path="/buy" element={user ? <BuyEnergy /> : <Navigate to="/login" />} />
         <Route path="/sell" element={user ? <SellEnergy /> : <Navigate to="/login" />} />
