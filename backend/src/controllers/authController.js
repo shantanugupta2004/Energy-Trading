@@ -1,50 +1,51 @@
-const fs = require("fs");
-const path = require("path");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
-const usersFilePath = path.join(__dirname, "../../db/users.json");
-const secretKey = "shantanu@2004"; // Use a secure key in production
-
-// Read users from JSON file
-const readUsers = () => {
-  if (!fs.existsSync(usersFilePath)) return [];
-  const data = fs.readFileSync(usersFilePath);
-  return JSON.parse(data);
-};
-
-// Write users to JSON file
-const writeUsers = (users) => {
-  fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
-};
+const pool = require("../../db/db");
+const secretKey = process.env.JWT_SECRET || "shantanu@2004"; // Use env variable in production
 
 // Register User
-exports.registerUser = (req, res) => {
+exports.registerUser = async (req, res) => {
   const { username, password } = req.body;
-  const users = readUsers();
 
-  if (users.find((user) => user.username === username)) {
-    return res.status(400).json({ error: "User already exists" });
+  try {
+    const existingUser = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await pool.query("INSERT INTO users (username, password) VALUES ($1, $2)", [username, hashedPassword]);
+
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (error) {
+    console.error("Error registering user:", error);
+    res.status(500).json({ error: "Server error" });
   }
-
-  const hashedPassword = bcrypt.hashSync(password, 10);
-  const newUser = { username, password: hashedPassword };
-  users.push(newUser);
-  writeUsers(users);
-
-  res.json({ message: "User registered successfully" });
 };
 
 // Login User
-exports.loginUser = (req, res) => {
+exports.loginUser = async (req, res) => {
   const { username, password } = req.body;
-  const users = readUsers();
-  const user = users.find((user) => user.username === username);
 
-  if (!user || !bcrypt.compareSync(password, user.password)) {
-    return res.status(400).json({ error: "Invalid credentials" });
+  try {
+    const result = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: "Invalid credentials" });
+    }
+
+    const user = result.rows[0];
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ error: "Invalid credentials" });
+    }
+
+    const token = jwt.sign({ id: user.id, username: user.username }, secretKey, { expiresIn: "1h" });
+
+    res.json({ token });
+  } catch (error) {
+    console.error("Error logging in:", error);
+    res.status(500).json({ error: "Server error" });
   }
-
-  const token = jwt.sign({ username }, secretKey, { expiresIn: "1h" });
-  res.json({ token });
 };

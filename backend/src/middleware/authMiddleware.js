@@ -1,12 +1,11 @@
 const jwt = require("jsonwebtoken");
+const secretKey = process.env.JWT_SECRET || "shantanu@2004"; // Use env variable in production
 
-const secretKey = "shantanu@2004"; // Same secret key as in authController.js
-
-const verifyToken = (req, res, next) => {
+const authMiddleware = (req, res, next) => {
   const token = req.header("Authorization");
 
   if (!token) {
-    return res.status(401).json({ error: "Access denied" });
+    return res.status(401).json({ error: "Access denied. No token provided." });
   }
 
   try {
@@ -18,4 +17,4 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-module.exports = verifyToken;
+module.exports = authMiddleware;
