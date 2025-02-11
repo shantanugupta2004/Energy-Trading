@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import getBlockchain from "../utils/blockchain";
+import { buyEnergy } from "../utils/energy";
 
 const BuyEnergy = () => {
   const [offerId, setOfferId] = useState("");
@@ -8,83 +8,56 @@ const BuyEnergy = () => {
   const [message, setMessage] = useState("");
 
   const handleBuy = async () => {
-    if (!window.ethereum) {
-      alert("MetaMask is not installed! Please install MetaMask and try again.");
+    if (!offerId || !amount) {
+      alert("Please enter a valid Offer ID and amount.");
       return;
     }
 
-    const accounts = await window.ethereum.request({ method: "eth_accounts" });
+    setLoading(true);
+    setMessage("Waiting for transaction confirmation...");
 
-    if (accounts.length === 0) {
-      try {
-        await window.ethereum.request({ method: "eth_requestAccounts" });
-      } catch (error) {
-        alert("Please connect MetaMask to proceed.");
-        return;
-      }
-    }
-
-    try {
-      setLoading(true);
-      setMessage("Waiting for transaction confirmation...");
-
-      const { contract } = await getBlockchain();
-      if (!contract) return;
-
-      const offer = await contract.getOffer(offerId);
-      // eslint-disable-next-line no-undef
-      const totalCost = BigInt(offer.price) * BigInt(amount);
-
-      const tx = await contract.buyEnergy(offerId, { value: totalCost });
-      await tx.wait();
-
-      setMessage("Purchase successful!");
-    } catch (error) {
-      console.error(error);
-      if (error.code === "INSUFFICIENT_FUNDS" || error.message.includes("insufficient funds")) {
-        alert("You do not have enough ETH to complete this transaction.");
-      } else {
-        alert("Transaction failed! Please check the details and try again.");
-      }
+    const result = await buyEnergy(offerId, amount);
+    if (result.success) {
+      setMessage(result.message);
+    } else {
       setMessage("Transaction failed. Please try again.");
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-  <div className="max-w-md w-full mx-auto p-6 bg-white rounded-lg shadow-md">
-    <h2 className="text-lg font-bold mb-4 text-center">Buy Energy</h2>
-    
-    <input
-      type="text"
-      placeholder="Offer ID"
-      value={offerId}
-      onChange={(e) => setOfferId(e.target.value)}
-      className="w-full p-2 border rounded mb-4"
-    />
-    
-    <input
-      type="text"
-      placeholder="Amount"
-      value={amount}
-      onChange={(e) => setAmount(e.target.value)}
-      className="w-full p-2 border rounded mb-4"
-    />
-    
-    <button
-      onClick={handleBuy}
-      className="w-full bg-green-500 text-white py-2 rounded transition hover:bg-green-600"
-      disabled={loading}
-    >
-      {loading ? "Processing..." : "Buy Energy"}
-    </button>
-    
-    {message && <p className="text-center text-gray-600 mt-2">{message}</p>}
-  </div>
-</div>
+      <div className="max-w-md w-full mx-auto p-6 bg-white rounded-lg shadow-md">
+        <h2 className="text-lg font-bold mb-4 text-center">Buy Energy</h2>
 
+        <input
+          type="text"
+          placeholder="Offer ID"
+          value={offerId}
+          onChange={(e) => setOfferId(e.target.value)}
+          className="w-full p-2 border rounded mb-4"
+        />
+
+        <input
+          type="text"
+          placeholder="Amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          className="w-full p-2 border rounded mb-4"
+        />
+
+        <button
+          onClick={handleBuy}
+          className="w-full bg-green-500 text-white py-2 rounded transition hover:bg-green-600"
+          disabled={loading}
+        >
+          {loading ? "Processing..." : "Buy Energy"}
+        </button>
+
+        {message && <p className="text-center text-gray-600 mt-2">{message}</p>}
+      </div>
+    </div>
   );
 };
 
