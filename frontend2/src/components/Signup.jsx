@@ -21,6 +21,7 @@ const Signup = () => {
         alert("Signup successful! Please log in.");
         navigate("/login");
       } else {
+        alert("User already exists.")
         setError(data.message);
       }
     } catch (err) {
