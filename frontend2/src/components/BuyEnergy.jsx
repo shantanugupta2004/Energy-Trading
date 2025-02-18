@@ -20,7 +20,7 @@ const BuyEnergy = () => {
     if (result.success) {
       setMessage(result.message);
     } else {
-      setMessage("Transaction failed. Please try again.");
+      setMessage("Transaction failed. Check funds or please try again.");
     }
 
     setLoading(false);
