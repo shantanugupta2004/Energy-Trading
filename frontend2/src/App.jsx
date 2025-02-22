@@ -7,6 +7,7 @@ import SellEnergy from "./components/SellEnergy";
 import BuyEnergy from "./components/BuyEnergy"
 import Login from "./components/Login";
 import Signup from "./components/Signup";
+import Dashboard from "./pages/Dashboard";
 import {getUser, removeToken} from './utils/auth'
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
         <Route path="/login" element={!user ? <Login setUser={setUser} /> : <Navigate to="/" />} />
         <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
         <Route path="/market" element={user ? <Market /> : <Navigate to="/login" />} />
+        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/buy" element={user ? <BuyEnergy /> : <Navigate to="/login" />} />
         <Route path="/sell" element={user ? <SellEnergy /> : <Navigate to="/login" />} />
         <Route path="/" element={!user ? <Navigate to="/login"/> : <Home/>}/>

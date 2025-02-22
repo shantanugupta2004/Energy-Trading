@@ -3,13 +3,15 @@ const express = require("express");
 const cors = require("cors");
 const energyRoutes = require("./routes/energyRoutes");
 const authRoutes = require('./routes/authRoutes')
+const analyticsRoutes = require('./routes/analyticsRoutes.js')
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 app.use("/api/energy", energyRoutes);
-app.use("/api/auth", authRoutes)
+app.use("/api/auth", authRoutes);
+app.use("/analytics", analyticsRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
