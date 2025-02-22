@@ -27,6 +27,7 @@ const Navbar = ({ handleLogout }) => {
       {/* Navigation Links */}
       <div className="space-x-6">
         <Link to="/" className="text-white hover:text-green-400 transition">Home</Link>
+        <Link to="/dashboard" className="text-white hover:text-green-400 transition">Dashboard</Link>
         <Link to="/market" className="text-white hover:text-green-400 transition">Market</Link>
         <Link to="/buy" className="text-white hover:text-green-400 transition">Buy</Link>
         <Link to="/sell" className="text-white hover:text-green-400 transition">Sell</Link>
