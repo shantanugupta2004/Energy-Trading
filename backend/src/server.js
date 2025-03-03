@@ -6,7 +6,11 @@ const authRoutes = require('./routes/authRoutes')
 const analyticsRoutes = require('./routes/analyticsRoutes.js')
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "https://energy-trader.netlify.app", // Replace with your frontend URL
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true, // If you're using cookies or sessions
+}));
 app.use(express.json());
 
 app.use("/api/energy", energyRoutes);
