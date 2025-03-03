@@ -3,12 +3,14 @@ import axios from "axios";
 import { Bar, Line } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
 
+const url = "https://energy-trading-z0ui.onrender.com" || "http://localhost:5000";
+
 const Dashboard = () => {
     const [transactions, setTransactions] = useState([]);
     const chartRef = useRef(null);
 
     useEffect(() => {
-        axios.get("http://localhost:5000/analytics/transactions")
+        axios.get(`${url}/analytics/transactions`)
             .then(response => setTransactions(response.data.result))
             .catch(error => console.error("Error fetching transactions", error));
 
