@@ -2,7 +2,7 @@
 
 A decentralized platform for buying and selling renewable energy using **Ethereum blockchain and smart contracts**. Users can list, buy, and trade energy securely, with transactions stored on the blockchain.  
 
-🚀 **Live Demo:** [Frontend (Netlify)](https://energy-trader.netlify.app) | [Backend (Render)](https://energy-trading-z0ui.onrender.com)
+🚀 **Live Demo:** [(Netlify)](https://energy-trader.netlify.app) 
 
 ---
 
@@ -54,7 +54,7 @@ node src/server.js
 
 ### 🔹 Frontend Setup
 ```sh
-cd frontend
+cd frontend2
 npm install
 npm run dev
 ```
