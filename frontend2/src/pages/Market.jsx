@@ -94,7 +94,7 @@ const Market = () => {
                 </div>
                 <div className="mt-3 md:mt-0">
                   <button
-                    onClick={() => handleBuy(listing.id, listing.amount)}
+                    onClick={() => handleBuy(listing.id, listing.price)}
                     disabled={buyingId === listing.id}
                     className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:bg-green-300"
                   >
